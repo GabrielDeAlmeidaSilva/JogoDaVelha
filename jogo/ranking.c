@@ -1,20 +1,108 @@
 #include "jogo.h"
 
-Bloco* carregarPartidasDoArquivo(const char *nomeArquivo) {
-    FILE *arquivo = fopen(nomeArquivo, "r");
-    if (arquivo == NULL) {
-        return NULL; 
+Ranking* cria_nodoRanking() {
+    Ranking *novo = malloc(sizeof(Ranking));
+    if (!novo) {
+        printf("Problema de alocacao\n");
+        exit(0);
+    }
+    novo->vitorias = 0;
+    novo->prox = NULL;
+    return novo;
+}
+
+Ranking* atualizar_ou_inserir(Ranking *list, const char *jogador) {
+    if (strcmp(jogador, "Empate") == 0 || strcmp(jogador, "Computador") == 0) {
+        return list;
     }
 
-    Bloco *listaPartidas = NULL;
+    Ranking *atual = list;
+
+    while (atual != NULL) {
+        if (strcmp(atual->nome, jogador) == 0) {
+            atual->vitorias++; 
+            return list;
+        }
+        atual = atual->prox;
+    }
+
+    Ranking *novo = cria_nodoRanking();
+    strcpy(novo->nome, jogador);
+    novo->vitorias = 1;
+    novo->prox = list;
+    list = novo;
+    
+    return list; 
+}
+
+Ranking* processarRankingArquivo(const char *arquivo, Ranking *list){
+    FILE *file = fopen(arquivo, "r");
+            if (file == NULL) {
+        printf("Erro ao abrir o arquivo!\n");
+        exit(0);
+    }
     char linha[1000];
 
-    while (fgets(linha, sizeof(linha), arquivo) != NULL) {
-        linha[strcspn(linha, "\r\n")] = 0; // Remove a quebra de linha (\n ou \r\n)
-        if (strlen(linha) > 0) {
-            inserePartidaFinal(linha, &listaPartidas);
+    while (fgets(linha, sizeof(linha), file) != NULL) {
+        linha[strcspn(linha, "\r\n")] = 0;
+
+        if (strlen(linha) == 0){
+            continue;
         }
+
+        char *Jogador = strrchr(linha, ';');
+
+        if (Jogador != NULL) {
+            Jogador++; 
+            
+            list = atualizar_ou_inserir(list, Jogador);
+        }
+
+
     }
-    fclose(arquivo);
-    return listaPartidas;
+    fclose(file);
+    return list;
+
+}
+
+void ordena (Ranking **list){
+ if(*list == NULL || (*list)->prox == NULL) {
+    return;
+ }
+ int trocou;
+ Ranking *aux;
+ 
+ do {
+    trocou = 0;
+    aux = *list;
+
+    while(aux->prox != NULL){
+        if (aux->vitorias < aux->prox->vitorias) {
+            int temp = aux->vitorias;
+            aux->vitorias = aux->prox->vitorias;
+            aux->prox->vitorias = temp;
+
+            char temp_nome[50];
+            strcpy(temp_nome, aux->nome);
+            strcpy(aux->nome, aux->prox->nome);
+            strcpy(aux->prox->nome, temp_nome);
+
+            trocou = 1;
+        }
+        aux = aux->prox;
+    }
+
+}  while (trocou == 1);
+
+}
+
+
+void exibir_ranking(Ranking *list) {
+    ordena(&list);
+    printf("\n--- RANKING DE VITORIAS ---\n");
+    Ranking *atual = list;
+    while (atual != NULL) {
+        printf("Jogador: %s | Vitorias: %d\n", atual->nome, atual->vitorias);
+        atual = atual->prox;
+    }
 }

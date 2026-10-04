@@ -43,21 +43,17 @@ void imprimeJogadas(Jogada *list);
 void imprimePartidas(Bloco *list);
 void salvarDados(Bloco *list);
 
-//Ranking
 typedef struct Ranking {
     char nome[50];
     int vitorias;
     struct Ranking *prox;
 } Ranking;
 
-Bloco* carregarPartidasDoArquivo(const char *nomeArquivo);
-RankingNodo* gerarListaRanking(Bloco *listaPartidas);
-void ordenaRanking(RankingNodo **list);
-void imprimirRanking(RankingNodo *listaRanking);
-void ranquearUsuarios();
-
-
-
+Ranking* cria_nodoRanking();
+Ranking* atualizar_ou_inserir(Ranking *list, const char *jogador);
+Ranking* processarRankingArquivo(const char *nome_arquivo, Ranking *list);
+void ordena (Ranking **list);
+void exibir_ranking(Ranking *list);
 
 
 #endif

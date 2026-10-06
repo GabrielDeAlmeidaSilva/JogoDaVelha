@@ -22,12 +22,11 @@ Ranking* garantir_jogador(Ranking *list, const char *jogador) {
     Ranking *atual = list;
     while (atual != NULL) {
         if (strcmp(atual->nome, jogador) == 0) {
-            return list; // O jogador já está na lista
+            return list; 
         }
         atual = atual->prox;
     }
 
-    // Se não estiver na lista, insere com 0 vitórias
     Ranking *novo = cria_nodoRanking();
     strcpy(novo->nome, jogador);
     novo->vitorias = 0;
@@ -45,7 +44,7 @@ void incrementar_vitoria(Ranking *list, const char *jogador) {
     while (atual != NULL) {
         if (strcmp(atual->nome, jogador) == 0) {
             atual->vitorias++; 
-            return; // Encontrou, incrementou e encerra
+            return; 
         }
         atual = atual->prox;
     }
@@ -77,7 +76,6 @@ Ranking* processarRankingArquivo(const char *arquivo, Ranking *list) {
             }
         }
 
-        // 2. Extrai o vencedor (último campo da linha) para somar a vitória
         char *vencedor = strrchr(linha, ';');
         if (vencedor != NULL) {
             vencedor++; 

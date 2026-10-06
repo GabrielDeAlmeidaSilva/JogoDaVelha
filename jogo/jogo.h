@@ -39,7 +39,7 @@ Bloco* criar_nodo();
 //insercao
 void insereJogadaFinal(Jogada **list, int linha, int coluna );
 void preencheDadosPartida(Partida *dados, char linha[]);
-int inserePartidaFinal(char linha[], Bloco **list);
+void inserePartidaFinal(Partida partida, Bloco **list);
 
 //impressao
 void converteStringPartida(Partida dados, char *buffer);
@@ -48,18 +48,27 @@ void imprimeJogadas(Jogada *list);
 void imprimePartidas(Bloco *list);
 void salvarDados(Bloco *list);
 
+//FREE
+void liberarJogadas(Jogada **list);
+void liberarPartidas(Bloco **list);
+
 typedef struct Ranking {
     char nome[50];
     int vitorias;
     struct Ranking *prox;
 } Ranking;
 
+void inicializaRanking(Ranking **list);
 Ranking* cria_nodoRanking();
-Ranking* atualizar_ou_inserir(Ranking *list, const char *jogador);
-Ranking* processarRankingArquivo(const char *nome_arquivo, Ranking *list);
+
+void incrementar_vitoria(Ranking *list, const char *jogador);
+Ranking* processarRankingArquivo(const char *arquivo, Ranking *list);
 void ordena (Ranking **list);
 void exibir_ranking(Ranking *list);
+Ranking* garantir_jogador(Ranking *list, const char *jogador);
+void liberarRanking(Ranking **list);
 
+//jogo
 int number_verify(char *n);
 void ler_dado(char *msg, int *var);
 void esc(char *msg);

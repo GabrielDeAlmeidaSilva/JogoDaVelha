@@ -39,56 +39,12 @@ void insereJogadaFinal(Jogada **list, int linha, int coluna) {
     }
 }
 
-void preencheDadosPartida(Partida *dados, char linha[]) {
-    char *token = strtok(linha, ";");
-    if (token == NULL) return;
 
-    // ID
-    char *endptr;
-    dados->id = (int)strtol(token, &endptr, 10);
-
-    // NomeUsuario
-    token = strtok(NULL, ";");
-    if (token != NULL) {
-        strcpy(dados->nomeUsuario, token);
-    }
-
-    // JogadasUsuario
-    while ((token = strtok(NULL, ";")) != NULL) {
-        if (token[0] == '\0') {
-            break;
-        }
-        int l, c;
-        if (sscanf(token, "%d-%d", &l, &c) == 2) {
-           insereJogadaFinal(&(dados->jogadasUsuario), l, c);
-        } else {
-            // NomeOponente
-           strcpy(dados->nomeOponente, token);
-           break; 
-        }
-    }
-
-    // JogadasOponente
-    while ((token = strtok(NULL, ";")) != NULL) {
-        if (token[0] == '\0') {
-            break;
-        }
-        int l, c;
-        if (sscanf(token, "%d-%d", &l, &c) == 2) {
-           insereJogadaFinal(&(dados->jogadasOponente), l, c);
-        } else {
-            // Resultado
-           strcpy(dados->resultado, token);
-           break;
-        }
-    }
-}
-
-int inserePartidaFinal(char linha[], Bloco **list) {
-    if (list == NULL) return 0;
+void inserePartidaFinal(Partida partida, Bloco **list) {
+    
 
     Bloco *novo = criar_nodo();
-    preencheDadosPartida(&(novo->dados), linha);
+    novo->dados = partida;
 
     if (*list == NULL) {
         *list = novo;
@@ -100,7 +56,7 @@ int inserePartidaFinal(char linha[], Bloco **list) {
         aux->prox = novo;
     }
 
-    return 1;
+   
 }
 
 void converteStringJogadas(Jogada *dados, char *buffer) {
@@ -127,7 +83,7 @@ void converteStringPartida(Partida dados, char *buffer) {
     converteStringJogadas(dados.jogadasOponente, buffer);
 
     strcat(buffer, ";");
-    sprintf(temp, "%s;", dados.resultado);
+    sprintf(temp, "%s", dados.resultado);
     strcat(buffer, temp);
 
 
@@ -170,4 +126,33 @@ void salvarDados(Bloco *list){
 
     fclose(arquivo);
 
+}
+
+void liberarJogadas(Jogada **list) {
+    if (list == NULL) return;
+    
+    Jogada *atual = *list;
+    while (atual != NULL) {
+        Jogada *temp = atual;
+        atual = atual->prox;
+        free(temp);
+    }
+    *list = NULL; 
+}
+
+void liberarPartidas(Bloco **list) {
+    if (list == NULL) return;
+    
+    Bloco *atual = *list;
+    while (atual != NULL) {
+        Bloco *temp = atual;
+        atual = atual->prox;
+   
+     
+        liberarJogadas(&(temp->dados.jogadasUsuario));
+        liberarJogadas(&(temp->dados.jogadasOponente));
+        
+        free(temp);
+    }
+    *list = NULL; 
 }

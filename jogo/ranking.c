@@ -8,7 +8,7 @@ Ranking* cria_nodoRanking() {
     Ranking *novo = malloc(sizeof(Ranking));
     if (!novo) {
         printf("Problema de alocacao\n");
-        exit(0);
+        return NULL;
     }
     novo->vitorias = 0;
     novo->prox = NULL;

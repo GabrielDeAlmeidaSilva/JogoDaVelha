@@ -28,7 +28,7 @@ int main() {
 
         switch(opcao) {
             case 1: {
-char nome[255];
+                char nome[49];
                 int vitoriasUsuario = 0;
                 int vitoriasComputador = 0;
                 int empates = 0;
@@ -37,7 +37,7 @@ char nome[255];
 
                 // Ler nome do jogador
                 esc("\nDigite o nome do jogador => ");
-                scanf(" %254s", nome);
+                scanf(" %49s", nome);
 
             
                 // Par ou Ímpar da partida inicial

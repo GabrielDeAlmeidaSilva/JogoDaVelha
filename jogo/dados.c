@@ -8,7 +8,7 @@ Bloco* criar_nodo() {
     Bloco *novo = malloc(sizeof(Bloco));
     if (!novo) {
         printf("Problema de alocacao\n");
-        exit(0);
+        return NULL;
     }
 
     novo->dados.jogadasUsuario = NULL;

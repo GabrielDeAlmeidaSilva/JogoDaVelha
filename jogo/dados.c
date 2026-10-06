@@ -168,6 +168,6 @@ void salvarDados(Bloco *list){
         fprintf(arquivo, "%s\n", linha);
     }
 
-     fclose(arquivo);
+    fclose(arquivo);
 
 }

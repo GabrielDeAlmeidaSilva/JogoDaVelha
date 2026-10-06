@@ -35,34 +35,57 @@ Ranking* atualizar_ou_inserir(Ranking *list, const char *jogador) {
     return list; 
 }
 
+
 Ranking* processarRankingArquivo(const char *arquivo, Ranking *list){
     FILE *file = fopen(arquivo, "r");
-            if (file == NULL) {
+    if (file == NULL) {
         printf("Erro ao abrir o arquivo!\n");
-        exit(0);
+        return list; // Retorna a lista atual em vez de fechar o programa com exit
     }
     char linha[1000];
 
     while (fgets(linha, sizeof(linha), file) != NULL) {
-        linha[strcspn(linha, "\r\n")] = 0;
+        linha[strcspn(linha, "\r\n")] = 0; // Remove quebra de linha
 
         if (strlen(linha) == 0){
             continue;
         }
 
-        char *Jogador = strrchr(linha, ';');
+        // Separa todos os tokens da linha usando ';'
+        char *token = strtok(linha, ";");
+        char idPartida[50] = "";
+        char nomeUsuario[50] = "";
+        char ultimoToken[50] = "";
 
-        if (Jogador != NULL) {
-            Jogador++; 
-            
-            list = atualizar_ou_inserir(list, Jogador);
+        if (token != NULL) {
+            strcpy(idPartida, token);
         }
 
+        int count = 0;
+        while (token != NULL) {
+            if (count == 1) { // O segundo campo é o nome do Usuário
+                strcpy(nomeUsuario, token);
+            }
+            strcpy(ultimoToken, token); // Guarda o último token não vazio
+            token = strtok(NULL, ";");
+            count++;
+        }
 
+        // Se o resultado gravado for igual ao ID do usuário, substitui pelo nome do usuário
+        if (strcmp(ultimoToken, idPartida) == 0 || strcmp(ultimoToken, "1") == 0) {
+            if (strlen(nomeUsuario) > 0) {
+                strcpy(ultimoToken, nomeUsuario);
+            }
+        }
+
+        // Atualiza o ranking se o vencedor for um jogador válido
+        if (strlen(ultimoToken) > 0) {
+            list = atualizar_ou_inserir(list, ultimoToken);
+        }
     }
+
     fclose(file);
     return list;
-
 }
 
 void ordena (Ranking **list){

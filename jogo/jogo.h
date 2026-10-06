@@ -1,9 +1,14 @@
 #ifndef JOGO_H
 #define JOGO_H
 
+#define FALSE 0
+#define TRUE 1
+
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <time.h>
 
 //declaracao das struct
 typedef struct Jogada {
@@ -54,6 +59,19 @@ Ranking* atualizar_ou_inserir(Ranking *list, const char *jogador);
 Ranking* processarRankingArquivo(const char *nome_arquivo, Ranking *list);
 void ordena (Ranking **list);
 void exibir_ranking(Ranking *list);
+
+int number_verify(char *n);
+void ler_dado(char *msg, int *var);
+void esc(char *msg);
+
+int par_impar();
+void inicializa_tabuleiro(int matriz[3][3]);
+void imprime_tabuleiro(int matriz[3][3], int vencedor); 
+int valida_jogada(int i, int j, int matriz[3][3]);
+int verifica_vitoria(int matriz[3][3]);
+void inteligencia_artificial(int matriz[3][3], int *linha, int *coluna);
+void inteligencia_natural(int matriz[3][3], int *linha, int *coluna);
+void atribui_matriz(int matriz[3][3], int i, int j, int quem);
 
 
 #endif

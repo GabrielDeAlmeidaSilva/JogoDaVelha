@@ -4,7 +4,7 @@ Este projeto consiste numa implementação do **Jogo da Velha** (Tic-Tac-Toe) em
 
 ---
 
-## 🚀 Funcionalidades
+##  Funcionalidades
 
 - **Modo de Jogo contra o Computador (IA):**
   - Decisão inicial de quem começa através de um jogo de *Par ou Ímpar*.

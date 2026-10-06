@@ -1,5 +1,9 @@
 #include "jogo.h"
 
+void inicializaRanking(Ranking **list) {
+    *list = NULL;
+}
+
 Ranking* cria_nodoRanking() {
     Ranking *novo = malloc(sizeof(Ranking));
     if (!novo) {
@@ -10,80 +14,76 @@ Ranking* cria_nodoRanking() {
     novo->prox = NULL;
     return novo;
 }
-
-Ranking* atualizar_ou_inserir(Ranking *list, const char *jogador) {
+Ranking* garantir_jogador(Ranking *list, const char *jogador) {
     if (strcmp(jogador, "Empate") == 0 || strcmp(jogador, "Computador") == 0) {
         return list;
     }
 
     Ranking *atual = list;
-
     while (atual != NULL) {
         if (strcmp(atual->nome, jogador) == 0) {
-            atual->vitorias++; 
-            return list;
+            return list; // O jogador já está na lista
         }
         atual = atual->prox;
     }
 
+    // Se não estiver na lista, insere com 0 vitórias
     Ranking *novo = cria_nodoRanking();
     strcpy(novo->nome, jogador);
-    novo->vitorias = 1;
+    novo->vitorias = 0;
     novo->prox = list;
-    list = novo;
     
-    return list; 
+    return novo;
 }
 
+void incrementar_vitoria(Ranking *list, const char *jogador) {
+    if (strcmp(jogador, "Empate") == 0 || strcmp(jogador, "Computador") == 0) {
+        return;
+    }
 
-Ranking* processarRankingArquivo(const char *arquivo, Ranking *list){
+    Ranking *atual = list;
+    while (atual != NULL) {
+        if (strcmp(atual->nome, jogador) == 0) {
+            atual->vitorias++; 
+            return; // Encontrou, incrementou e encerra
+        }
+        atual = atual->prox;
+    }
+}
+
+Ranking* processarRankingArquivo(const char *arquivo, Ranking *list) {
     FILE *file = fopen(arquivo, "r");
     if (file == NULL) {
         printf("Erro ao abrir o arquivo!\n");
-        return list; // Retorna a lista atual em vez de fechar o programa com exit
+        return list;
     }
     char linha[1000];
 
     while (fgets(linha, sizeof(linha), file) != NULL) {
-        linha[strcspn(linha, "\r\n")] = 0; // Remove quebra de linha
+        linha[strcspn(linha, "\r\n")] = 0;
 
-        if (strlen(linha) == 0){
+        if (strlen(linha) == 0) {
             continue;
         }
 
-        // Separa todos os tokens da linha usando ';'
-        char *token = strtok(linha, ";");
-        char idPartida[50] = "";
-        char nomeUsuario[50] = "";
-        char ultimoToken[50] = "";
-
+        
+        char linha_copia[1000];
+        strcpy(linha_copia, linha);
+        char *token = strtok(linha_copia, ";"); // Pula o ID
         if (token != NULL) {
-            strcpy(idPartida, token);
-        }
-
-        int count = 0;
-        while (token != NULL) {
-            if (count == 1) { // O segundo campo é o nome do Usuário
-                strcpy(nomeUsuario, token);
-            }
-            strcpy(ultimoToken, token); // Guarda o último token não vazio
-            token = strtok(NULL, ";");
-            count++;
-        }
-
-        // Se o resultado gravado for igual ao ID do usuário, substitui pelo nome do usuário
-        if (strcmp(ultimoToken, idPartida) == 0 || strcmp(ultimoToken, "1") == 0) {
-            if (strlen(nomeUsuario) > 0) {
-                strcpy(ultimoToken, nomeUsuario);
+            char *nome_jogador = strtok(NULL, ";"); // Pega o nome do jogador
+            if (nome_jogador != NULL && strlen(nome_jogador) > 0) {
+                list = garantir_jogador(list, nome_jogador);
             }
         }
 
-        // Atualiza o ranking se o vencedor for um jogador válido
-        if (strlen(ultimoToken) > 0) {
-            list = atualizar_ou_inserir(list, ultimoToken);
+        // 2. Extrai o vencedor (último campo da linha) para somar a vitória
+        char *vencedor = strrchr(linha, ';');
+        if (vencedor != NULL) {
+            vencedor++; 
+            incrementar_vitoria(list, vencedor);
         }
     }
-
     fclose(file);
     return list;
 }
@@ -119,7 +119,6 @@ void ordena (Ranking **list){
 
 }
 
-
 void exibir_ranking(Ranking *list) {
     ordena(&list);
     printf("\n--- RANKING DE VITORIAS ---\n");
@@ -128,4 +127,18 @@ void exibir_ranking(Ranking *list) {
         printf("Jogador: %s | Vitorias: %d\n", atual->nome, atual->vitorias);
         atual = atual->prox;
     }
+}
+
+
+void liberarRanking(Ranking **list) {
+    if (list == NULL) return;
+    
+    Ranking *atual = *list;
+    while (atual != NULL) {
+        Ranking *temp = atual;
+        atual = atual->prox;
+      
+        free(temp);
+    }
+    *list = NULL; 
 }

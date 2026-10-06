@@ -8,7 +8,15 @@ int main() {
     Bloco *listaPartidasSessao = NULL;
     inicializa(&listaPartidasSessao);
 
-    int idGlobal = 1;
+    int idGlobal = 0;
+    FILE *file = fopen("partidas_velha.txt", "r");
+    if (file) {
+        char linha[255 + 1];
+        while (fgets(linha, sizeof(linha), file) != NULL) {
+            idGlobal++;
+        }
+        fclose(file);
+    }
 
     do {
         ler_dado("\n========== MENU JOGO DA VELHA ==========\n"
@@ -31,17 +39,7 @@ char nome[255];
                 esc("\nDigite o nome do jogador => ");
                 scanf(" %254s", nome);
 
-                // Determinar o ID inicial contando as linhas do arquivo existente
-                int id = 0;
-                FILE *file = fopen("partidas_velha.txt", "r");
-                if (file) {
-                    char linha[255 + 1];
-                    while (fgets(linha, sizeof(linha), file) != NULL) {
-                        id++;
-                    }
-                    fclose(file);
-                }
-
+            
                 // Par ou Ímpar da partida inicial
                 esc("\n--- Decisão de quem inicia (Par ou Ímpar) ---\n");
                 int ganhou_jogador = par_impar(); // 0 = Jogador, 1 = Computador
@@ -52,10 +50,10 @@ char nome[255];
 
                 while (continuar) {
                     // Incrementa o ID da partida
-                    id++;
+                    idGlobal++;
 
                     Partida partida;
-                    partida.id = id;
+                    partida.id = idGlobal;
                     strcpy(partida.nomeUsuario, nome);
                     strcpy(partida.nomeOponente, "Computador");
                     partida.jogadasUsuario = NULL;
@@ -105,18 +103,7 @@ char nome[255];
                     }
 
                     // Inserir na lista encadeada da sessão
-                    Bloco *novoNodo = criar_nodo();
-                    novoNodo->dados = partida;
-
-                    if (listaPartidasSessao == NULL) {
-                        listaPartidasSessao = novoNodo;
-                        inicioSessao = novoNodo;
-                    } else {
-                        Bloco *aux = listaPartidasSessao;
-                        while (aux->prox != NULL) aux = aux->prox;
-                        aux->prox = novoNodo;
-                        if (inicioSessao == NULL) inicioSessao = novoNodo;
-                    }
+                    inserePartidaFinal(partida, &listaPartidasSessao);
 
                     // Alterna a ordem de quem inicia para a próxima partida
                     ganhou_jogador = !ganhou_jogador;
@@ -128,28 +115,7 @@ char nome[255];
 
                 // Exibição do histórico das partidas jogadas
                 printf("\n========== HISTÓRICO DE PARTIDAS ==========\n");
-                Bloco *aux = inicioSessao;
-                int pNum = 1;
-                while (aux != NULL) {
-                    printf("\nPartida %d (ID %d):\n", pNum++, aux->dados.id);
-                    if (strcmp(aux->dados.resultado, "Empate") == 0) {
-                        printf("Resultado: Empate entre %s e %s\n", aux->dados.nomeUsuario, aux->dados.nomeOponente);
-                        printf("Jogadas do Usuario (%s): ", aux->dados.nomeUsuario);
-                        imprimeJogadas(aux->dados.jogadasUsuario);
-                        printf("Jogadas do Computador: ");
-                        imprimeJogadas(aux->dados.jogadasOponente);
-                    } else {
-                        printf("Vencedor: %s\n", aux->dados.resultado);
-                        if (strcmp(aux->dados.resultado, aux->dados.nomeUsuario) == 0) {
-                            printf("Jogadas do Vencedor (%s): ", aux->dados.nomeUsuario);
-                            imprimeJogadas(aux->dados.jogadasUsuario);
-                        } else {
-                            printf("Jogadas do Vencedor (Computador): ");
-                            imprimeJogadas(aux->dados.jogadasOponente);
-                        }
-                    }
-                    aux = aux->prox;
-                }
+                imprimePartidas(listaPartidasSessao);
 
                 // Vencedor geral do conjunto de partidas
                 printf("\n========== RESULTADO GERAL ==========\n");
@@ -168,10 +134,11 @@ char nome[255];
             case 2: {
                 // OPÇÃO 2: Salvar partidas no arquivo de texto
                 if (listaPartidasSessao == NULL) {
-                    printf("\n⚠️ Nenhuma partida foi jogada na sessão atual para ser salva!\n");
+                    printf("\n Nenhuma partida foi jogada na sessão atual para ser salva!\n");
                 } else {
                     salvarDados(listaPartidasSessao);
-                    printf("\n✅ Partidas salvas com sucesso em 'partidas_velha.txt'!\n");
+                    liberarPartidas(&listaPartidasSessao);
+                    printf("\n Partidas salvas com sucesso em 'partidas_velha.txt'!\n");
                 }
                 break;
             }
@@ -179,12 +146,14 @@ char nome[255];
             case 3: {
                 // OPÇÃO 3: Processar arquivo e exibir Ranking em ordem decrescente
                 Ranking *listaRanking = NULL;
+                inicializaRanking(&listaRanking);
                 listaRanking = processarRankingArquivo("partidas_velha.txt", listaRanking);
                 
                 if (listaRanking == NULL) {
                     printf("\nNão há registros suficientes para exibir o ranking.\n");
                 } else {
                     exibir_ranking(listaRanking);
+                    liberarRanking(&listaRanking);
                 }
                 break;
             }
@@ -199,7 +168,9 @@ char nome[255];
                     if (opcaoSalvar == 1) {
                         salvarDados(listaPartidasSessao);
                         printf("\nPartidas salvas com sucesso!\n");
-                    }
+                    }  
+                    liberarPartidas(&listaPartidasSessao);
+                    
                 }
                 printf("\nEncerrando o Jogo da Velha. Até logo!\n");
                 break;
